@@ -8,10 +8,9 @@
 
 import sys
 import signal
-import config
-import comm
+# import comm
 
-from PyQt5 import QtWidgets
+# from PyQt5 import QtWidgets
 
 from Camera.camera import Camera
 from Camera.threadcamera import ThreadCamera
@@ -24,49 +23,50 @@ from Motors.threadmotors import ThreadMotors
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if __name__ == '__main__':
+    topics = {'rgb': '/camera/rgb/image_raw',
+              'depth': '/camera/depth_registered/image_raw'}
 
+    # try:
+    #     cfg = config.load(sys.argv[1])
+    # except IndexError:
+    #     raise SystemExit('Missing YML file. Usage: python2 followperson.py [your_config_file].yml')
 
-    try:
-        cfg = config.load(sys.argv[1])
-    except IndexError:
-        raise SystemExit('Missing YML file. Usage: python2 followperson.py [your_config_file].yml')
-
-    jdrc = comm.init(cfg, 'FollowPerson')
-    cam_proxy = jdrc.getCameraClient('FollowPerson.Camera')
+    # jdrc = comm.init(cfg, 'FollowPerson')
+    # cam_proxy = jdrc.getCameraClient('FollowPerson.Camera')
 
 
     # Network (TensorFlow/Keras) parsing:
-    net_prop = cfg.getProperty('FollowPerson.Network')
-    framework = net_prop['Framework']
-    if framework.lower() == 'tensorflow':
-        from Net.TensorFlow.network import TrackingNetwork
-        # Parse and import the siamese network for face identification
-        siamese_model = net_prop['SiameseModel']
-        from Net.TensorFlow.siamese_network import SiameseNetwork
-    elif framework.lower() == 'keras':
-        from Net.Keras.network import TrackingNetwork
-    else:
-        raise SystemExit(('%s not supported! Supported frameworks: Keras, TensorFlow') % (framework))
+    # net_prop = cfg.getProperty('FollowPerson.Network')
+    # framework = net_prop['Framework']
+    # if framework.lower() == 'tensorflow':
+    #     from Net.TensorFlow.network import TrackingNetwork
+    #     # Parse and import the siamese network for face identification
+    #     siamese_model = net_prop['SiameseModel']
+    #     from Net.TensorFlow.siamese_network import SiameseNetwork
+    # elif framework.lower() == 'keras':
+    #     from Net.Keras.network import TrackingNetwork
+    # else:
+    #     raise SystemExit(('%s not supported! Supported frameworks: Keras, TensorFlow') % (framework))
 
-    # Device (PTZ/Kobuki) parsing:
-    device_type = cfg.getProperty('FollowPerson.Device')
-    if device_type.lower() == 'kobuki':
-        # GUI version with depth image
-        from GUI.gui import DepthGUI as GUIClass
-        # Turtlebot motors
-        from Motors.Kobuki.motors import Motors
-        motors_proxy = jdrc.getMotorsClient('FollowPerson.Motors')
-        # PT motors for EVI camera
-    elif device_type.lower() == 'ptz':
-        from GUI.gui import GUI as GUIClass
-        from Motors.PTZ.motors import Motors
-        motors_proxy = jdrc.getPTMotorsClient('FollowPerson.PTMotors')
-    else:
-        raise SystemExit(('%s not supported! Supported devices: Kobuki, PTZ') % (device_type))
+    # # Device (PTZ/Kobuki) parsing:
+    # device_type = cfg.getProperty('FollowPerson.Device')
+    # if device_type.lower() == 'kobuki':
+    #     # GUI version with depth image
+    #     from GUI.gui import DepthGUI as GUIClass
+    #     # Turtlebot motors
+    #     from Motors.Kobuki.motors import Motors
+    #     motors_proxy = jdrc.getMotorsClient('FollowPerson.Motors')
+    #     # PT motors for EVI camera
+    # elif device_type.lower() == 'ptz':
+    #     from GUI.gui import GUI as GUIClass
+    #     from Motors.PTZ.motors import Motors
+    #     motors_proxy = jdrc.getPTMotorsClient('FollowPerson.PTMotors')
+    # else:
+    #     raise SystemExit(('%s not supported! Supported devices: Kobuki, PTZ') % (device_type))
 
 
 
-    cam = Camera(cam_proxy)
+    cam = Camera(topics)
     t_cam = ThreadCamera(cam)
     t_cam.start()
 
